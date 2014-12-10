@@ -1,22 +1,38 @@
 #!/bin/bash
+
+# Variables
+SERVER_USERNAME="server_uname"
+SERVER_IP="server_ip"
+SERVER_MYSQL_USERNAME="server_mysql"
+SERVER_MYSQL_HOST="server_host"
+SERVER_MYSQL_PASSWORD="server_pass"
+SERVER_DB_NAME="server_db_name"
+SERVER_DUMP_FILE="/var/www/tmp_dump.sql"
+LOCAL_DUMP_FILE="/Library/WebServer/Documents/tmp_dump.sql"
+LOCAL_MYSQL_USERNAME="local_user"
+LOCAL_MYSQL_PASSWORD="local_pass"
+LOCAL_DB_NAME="local_db"
+OLD_TEXT="old_text"
+NEW_TEXT="new_text"
+
 # Create dump
-ssh -l {server_username} {server_ip} "mysqldump -u {server_mysql_username} --password={server_mysql_password} {server_db_name} > {server_dump_file}"
+ssh -l $SERVER_USERNAME $SERVER_IP "mysqldump -h $SERVER_MYSQL_HOST -u $SERVER_MYSQL_USERNAME --password=$SERVER_MYSQL_PASSWORD $SERVER_DB_NAME > $SERVER_DUMP_FILE"
 echo Created dump
 
 # Download dump
-scp -r {server_username}@{server_ip}:{server_dump_file} {local_dump_file}
+scp -r $SERVER_USERNAME@$SERVER_IP:$SERVER_DUMP_FILE $LOCAL_DUMP_FILE
 echo Downloaded dump
 
 # Find and replace (optionnal)
-sed -i "" 's/{old_text}/{new_text}/g' {local_dump_file}
+sed -i "" 's/$OLD_TEXT/$NEW_TEXT/g' $LOCAL_DUMP_FILE
 echo Replaced text
 
 # Import dump locally
-mysql -u {local_mysql_username} -p{local_mysql_password} {local_db_name} < {local_dump_file}
+mysql -u $LOCAL_MYSQL_USERNAME -p$LOCAL_MYSQL_PASSWORD $LOCAL_DB_NAME < $LOCAL_DUMP_FILE
 echo Imported dump
 
 # Removing files
-ssh -l {server_username} {server_ip} "rm {server_dump_file}"
-rm {local_dump_file}
+ssh -l $SERVER_USERNAME $SERVER_IP "rm $SERVER_DUMP_FILE"
+rm $LOCAL_DUMP_FILE
 echo Removed files
 echo All good.
